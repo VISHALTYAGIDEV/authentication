@@ -1,8 +1,9 @@
 const trycatch = (handler)=>{
-    return async(req,res,next)=>{
+    return async(req,res)=>{
         try {
-            await handler(req,res,next)
+            await handler(req,res)
         } catch (error) {
+             console.error(error)
             res.status(500).json({
                 message:error.message
             })
