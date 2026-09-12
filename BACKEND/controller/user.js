@@ -4,7 +4,18 @@ import { registerSchema } from "../config/zod.js";
 import sanitize from  "mongo-sanitize"
 import { redisClient } from "../index.js";
 import { User } from "../models/User.js";
+import bcrypt from "bcrypt"
+import crypto from "crypto"
+import sendMail from "../config/sendMail.js";
+import { getVerifyEmailHtml } from "../config/html.js";
 
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------------------
+User ko register karane ke liye */
+// ----------------------------------------------------------------------------------------------------------------
+//no sql injection se prevent karne keliye 
 export const registerUser = trycatch(async(req,res)=>{
     // sanitize is tarike se use hoga 
 const sanitizedBody = sanitize(req.body)
@@ -33,14 +44,16 @@ if(zodError?.issues && Array.isArray(zodError.issues)){
     })
 }
 const {name,email,password} = validation.data;
+//--------------------------------------------------------------------------------------------------------------------------
 
 
-//rate limiting keliye code
-//this line is just storing or making keys for the reddis with the ip address and email 
+//rate limiting implementation---------------------------------------------------------------------------------------------------------------------
+//this line is just storing or making keys for the reddis with the ip address and email , ham log redis and mongo dono ko check karenge redis short time ke liye and db long period of time ke liye 
 const rateLimitKey = `register-rate-limit:${req.ip}:${email}`
 
 //now this line will consult the redis whether you have served this user or not 
 if(await redisClient.get(rateLimitKey)){
+    //    console.log("MY rate limit hit")  
     return res.status(429).json({
         message:"to many requests , try agian later!"
     })
@@ -51,11 +64,60 @@ if(existingUser){
         message:"user already exists!"
     })
 }
+//------------------------------------------------------------------------------------------------------
 
-res.json({
+
+
+//-----------------------------------------------------------------------------------------------------------------
+/*REGISTER:
+  hash password
+  random token banao
+  {name, email, hashedPassword} → Redis mein 5 min ke liye
+  token se link banao → email bhejo
+  reply: "check your email"
+  ❌ MongoDB mein kuch nahi gaya
+
+VERIFY (user link pe click karta hai):
+  URL se token nikalo
+  Redis se data lo
+    → null mila? = expire ya galat link → error
+  JSON.parse karo
+  ab MongoDB mein user save karo ✅
+  Redis se key delete karo (taaki link dobara na chale)*/
+//yaha par user ko redis mai store kara rahe hai until email verifies
+const hashedPassword = await bcrypt.hash(password,10)
+// Ye wahi token hai jo email ke link mein jaayega: for ex http://localhost:3000/verify/a3f9b2...
+const verifyToken = crypto.randomBytes(32).toString("hex")
+const verifyKey = `verify:${verifyToken}`
+//Redis sirf text rakh sakta hai, object nahi. To object ko text mein badalna padta hai.
+const datatoStore = JSON.stringify({
     name,
     email,
-    password
+    password:hashedPassword
+})
+await redisClient.set(verifyKey,datatoStore,{EX:300})
+
+const subject = "verify email to register the user!"
+// html ke andar bheji jaati hai token and email and then sendEmail function automatically email send kae deta hai
+const html = getVerifyEmailHtml({email,token:verifyToken})
+// now just send the mail , mail send karna controller ka kam nahi hai yaha sirf hum mail ko send karne ka order de rahe hai
+await sendMail({email,subject,html})
+//jabtak rate limiting hai tab tak nahi bhej paayega dubara email
+await redisClient.set(rateLimitKey,"true",{EX:60})
+//----------------------------------------------------------------------------------------------------
+
+res.json({
+    message:"if your email is valid then , verification link via email has been send"
 })
 
 })
+
+
+
+
+
+// -------------------------------------------------------------------------------------------------------------
+//now email vagera send ho gau hai to user ko verify karna hai bass
+// export verifyUser = trycatch(async(req,res)=>{
+    
+// })
