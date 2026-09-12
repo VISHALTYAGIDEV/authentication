@@ -118,6 +118,51 @@ res.json({
 
 // -------------------------------------------------------------------------------------------------------------
 //now email vagera send ho gau hai to user ko verify karna hai bass
-// export verifyUser = trycatch(async(req,res)=>{
-    
-// })
+export const verifyUser = trycatch(async(req,res)=>{
+    const {token} = req.params
+    // console.log(token)
+
+    // token nahi mila to ye 
+    if(!token){
+        return res.status(400).json({
+            message:"authentication token is required!"
+        })
+    }
+
+    //token  mila to ye 
+    const verifyKey = `verify:${token}`
+
+    //key ki madad se user data nikalna hai jo ki redis mai hai
+    const userdataJSON = await redisClient.get(verifyKey)
+
+    //data nahi mila to
+    if(!userdataJSON){
+        return res.status(400).json({
+            message:"verification link is expired!"
+        })
+    }
+
+
+
+const userData = JSON.parse(userdataJSON)
+
+const existingUser = await User.findOne({email:userData.email})
+if(existingUser){
+   return res.status(400).json({
+        message:"user already exists!"
+    })
+}
+
+const newUser = await User.create({
+    name:userData.name,
+    email:userData.email,
+    password:userData.password,
+})
+await redisClient.del(verifyKey)
+
+
+res.status(201).json({
+    message:"email verified successfully! and your account has been created!",
+    user:{_id:newUser._id, name:newUser.name, email:newUser.email},
+})
+})
