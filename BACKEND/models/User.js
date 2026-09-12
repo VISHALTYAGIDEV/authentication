@@ -1,7 +1,7 @@
 import { Timestamp } from "mongodb"
 import mongoose from "mongoose"
 
-const schema = new mongoose.schema({
+const schema = new mongoose.Schema({
     name:{
      type: String,
      required: true,
@@ -28,7 +28,7 @@ const schema = new mongoose.schema({
      }
 },
 
-{ timestamps:true}
+{Timestamp:true}
 )
 
 export const User = mongoose.model("User",schema)

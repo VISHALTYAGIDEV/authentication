@@ -1,10 +1,28 @@
 import express from "express"
 import dotenv from "dotenv"
 import connectdb  from "./config/db.js"
-
+import { createClient } from "redis"
 dotenv.config()
 
 await connectdb()
+
+
+// here we are connection our server with redis for rate limiting ,here hamne sirf eek connection stablish kiya hai server and redis ke beech mai and have make it usefull to thecontroller if need anywhere
+const redisUrl = process.env.REDIS_URL
+if(!redisUrl){
+    console.log("redis url missing")
+    process.exit(1)
+}
+export const redisClient = createClient({
+    url:redisUrl
+})
+redisClient
+.connect()
+.then(()=>console.log("redis connected successsfully!"))
+.catch(console.error)
+
+
+
 const app = express()
 
 // middlewares
