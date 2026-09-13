@@ -16,6 +16,8 @@ if(!redisUrl){
 export const redisClient = createClient({
     url:redisUrl
 })
+
+redisClient.on("error", (err) => console.error("redis error:", err))
 redisClient
 .connect()
 .then(()=>console.log("redis connected successsfully!"))

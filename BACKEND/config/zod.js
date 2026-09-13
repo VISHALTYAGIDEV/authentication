@@ -6,3 +6,11 @@ export const registerSchema = z.object({
     email:z.string().email("invalid email format!"),
     password:z.string().min(8,"atleast 8 characters long!")
 })
+
+
+
+//login user ka schema 
+export const loginSchema = z.object({
+    email:z.string().email("invalid email format!"),
+    password:z.string().min(8,"atleast 8 characters long!")
+})

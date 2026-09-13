@@ -1,20 +1,21 @@
 import trycatch from "../middleware/trycatch.js";
-import { registerSchema } from "../config/zod.js";
+import { registerSchema,loginSchema } from "../config/zod.js";
 // sanitize basically $ se shuru hone vale jine bhi nosql injections hai unko delete kar dega and mongo tak jane hi nhi dega
 import sanitize from  "mongo-sanitize"
 import { redisClient } from "../index.js";
-import { User } from "../models/User.js";
+import { User} from "../models/User.js";
 import bcrypt from "bcrypt"
 import crypto from "crypto"
 import sendMail from "../config/sendMail.js";
-import { getVerifyEmailHtml } from "../config/html.js";
+import { getVerifyEmailHtml,getOtpHtml } from "../config/html.js";
 
 
 
 
 /*---------------------------------------------------------------------------------------------------------------------------------
-User ko register karane ke liye */
+User ko register karane ke liye complete controller */
 // ----------------------------------------------------------------------------------------------------------------
+
 //no sql injection se prevent karne keliye 
 export const registerUser = trycatch(async(req,res)=>{
     // sanitize is tarike se use hoga 
@@ -47,6 +48,7 @@ const {name,email,password} = validation.data;
 //--------------------------------------------------------------------------------------------------------------------------
 
 
+
 //rate limiting implementation---------------------------------------------------------------------------------------------------------------------
 //this line is just storing or making keys for the reddis with the ip address and email , ham log redis and mongo dono ko check karenge redis short time ke liye and db long period of time ke liye 
 const rateLimitKey = `register-rate-limit:${req.ip}:${email}`
@@ -65,6 +67,7 @@ if(existingUser){
     })
 }
 //------------------------------------------------------------------------------------------------------
+
 
 
 
@@ -114,8 +117,6 @@ res.json({
 
 
 
-
-
 // -------------------------------------------------------------------------------------------------------------
 //now email vagera send ho gau hai to user ko verify karna hai bass
 export const verifyUser = trycatch(async(req,res)=>{
@@ -142,8 +143,6 @@ export const verifyUser = trycatch(async(req,res)=>{
         })
     }
 
-
-
 const userData = JSON.parse(userdataJSON)
 
 const existingUser = await User.findOne({email:userData.email})
@@ -152,7 +151,6 @@ if(existingUser){
         message:"user already exists!"
     })
 }
-
 const newUser = await User.create({
     name:userData.name,
     email:userData.email,
@@ -165,4 +163,90 @@ res.status(201).json({
     message:"email verified successfully! and your account has been created!",
     user:{_id:newUser._id, name:newUser.name, email:newUser.email},
 })
+})
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+//  now user login ka controller 
+//------------------------------------------------------------------------------------------------------------------
+/* isme bhi same hi flow chalega register user ki tarah like phele data ko sanitize and usable banao zod and mongosanitize ka use karke 
+     then  rate limit lagao and then user ko find karke baaki ka kaam karo */ 
+export const userlogin = trycatch(async(req,res)=>{
+    const sanitizedBody = sanitize(req.body)
+// safeParse zod ka function hai jo ki data ko validate karega
+const validation = loginSchema.safeParse(sanitizedBody)
+// aagar data mai koi bhi gadbad hai usko catch karne ke liye 
+if(!validation.success){
+    const  zodError = validation.error
+let firtErrorMessage = "validation fails!";
+let allErrors = []
+// ye sbhi hamne specific error message extract karne ke liye kiy hai 
+if(zodError?.issues && Array.isArray(zodError.issues)){
+    allErrors = zodError.issues.map((issue)=>({
+        field:issue.path? issue.path.join(".") : 'unknown',
+        message:issue.message || "validation error!",
+        code:issue.code
+    }))
+    firtErrorMessage = allErrors[0]?.message || "validation error!"
+}
+    return res.status(400).json({
+        message : firtErrorMessage,
+        error : allErrors, 
+    })
+}
+const {email,password} = validation.data;
+
+
+
+
+const rateLimitKey = `login-rate-limit:${req.ip}:${email}`
+if(await redisClient.get(rateLimitKey)){
+    //    console.log("MY rate limit hit")  
+    return res.status(429).json({
+        message:"to many requests , try agian later!"
+    })
+}
+
+
+const  user = await User.findOne({email})
+if (!user){
+    res.status(400).json({
+        message:"Invalid credentials!"
+    })
+}
+
+// console.log("password",user.password)
+const comparePassword = await bcrypt.compare(password,user.password)
+if(!comparePassword){
+    res.status(400).json({
+        message:"Invalid credentials!"
+    })
+}
+
+const otp = Math.floor(100000 + Math.random()*900000).toString()
+const otpKey = `login-otp:${email}`
+// is rate limit ka matlab purana otp 5min tak valid rahega
+await redisClient.set(otpKey,JSON.stringify(otp),{
+    EX:300
+})
+
+const subject = "otp verification for login!"
+const html = getOtpHtml({email,otp})
+
+await sendMail({email,subject,html})
+
+// is rate limit ka matlab ki user 1 min ke baad hi new otp mang sakta hai
+await redisClient.set(rateLimitKey,"true",{
+    EX:60
+})
+res.json({
+    message:"if your email is valid then otp has been send via mail , and valid for 5 minutes!"
+})
+
+
+
 })
