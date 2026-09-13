@@ -170,6 +170,8 @@ res.status(201).json({
 
 
 
+
+
 //----------------------------------------------------------------------------------------------------------------------------
 //  now user login ka controller 
 //------------------------------------------------------------------------------------------------------------------
@@ -201,8 +203,6 @@ if(zodError?.issues && Array.isArray(zodError.issues)){
 const {email,password} = validation.data;
 
 
-
-
 const rateLimitKey = `login-rate-limit:${req.ip}:${email}`
 if(await redisClient.get(rateLimitKey)){
     //    console.log("MY rate limit hit")  
@@ -218,6 +218,7 @@ if (!user){
         message:"Invalid credentials!"
     })
 }
+
 
 // console.log("password",user.password)
 const comparePassword = await bcrypt.compare(password,user.password)
@@ -246,6 +247,52 @@ await redisClient.set(rateLimitKey,"true",{
 res.json({
     message:"if your email is valid then otp has been send via mail , and valid for 5 minutes!"
 })
+})
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+//==================================================================================================================================
+//now otp ko verify karne ka controller yaha likhenge
+//============================================================================================================================
+export const verifyOtp = trycatch(async(req,res)=>{
+    const {email,otp} = req.body
+    if(!email || !otp){
+        return res.status(400).json({
+            message:"please provide all details!"
+        })
+    }
+
+    const otpKey = `login-otp:${email}`
+
+    const storedOtpString = await redisClient.get(otpKey)
+      if(!storedOtpString){
+        return res.status(400).json({
+            message:"otp expired!"
+        })
+    }
+
+    const storedOtp = JSON.parse(storedOtpString)
+    if(storedOtp !=otp){
+        return res.status(400).json({
+            message:"invalid otp!"
+        })
+    }
+    await redisClient.del(otpKey)
+
+
+    //otp verified hote hi aab ham log access tokens and refresh tokens generate karenge  after finding th euser in the user in the database
+    const user = User.findOne({email})
+    if(!user){
+        return  res.status(400).json({
+            message:"user not found! please register before loging in!"
+        })
+    }
 
 
 
