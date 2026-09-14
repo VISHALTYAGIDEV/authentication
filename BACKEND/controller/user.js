@@ -365,14 +365,14 @@ export const RefreshToken = trycatch(async(req,res)=>{
 //user logout controller
 //========================================================================================================
 export const logoutUser = trycatch(async(req,res)=>{
-    const userId = req.User._id
-
-    revokeRefreshToken(userId)
+    const userId = req.user._id.toString()
+console.log(userId)
+   await revokeRefreshToken(userId)
 
 res.clearCookie("RefreshToken")
 res.clearCookie("AccessToken")
 
-redisClient.del(`user:${userId}`)
+await redisClient.del(`user:${userId}`)
 
 res.status(200).json({
     message:"user logged out successfully!"

@@ -70,5 +70,5 @@ export const generateAccessToken = (id,res)=>{
 
 //logout karne ke baad redis se bhi to user data delete karna padega
 export const revokeRefreshToken = async(userId)=>{
-    redisClient.del(`refresh-token${userId}`)
+    await redisClient.del(`refresh-token:${userId}`)
 }

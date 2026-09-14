@@ -1,5 +1,5 @@
 import express from "express"
-import { registerUser, userlogin, verifyUser,verifyOtp, myprofile, RefreshToken } from "../controller/user.js"
+import { registerUser, userlogin, verifyUser,verifyOtp, myprofile, RefreshToken,logoutUser } from "../controller/user.js"
 import isAuth from "../middleware/isAuth.js"
 
 const router = express.Router()
@@ -23,7 +23,7 @@ router.get("/my",isAuth,myprofile)
 router.post("/refresh",RefreshToken)
 
 //user logout route 
-router.post("/logout",logoutUser)
+router.post("/logout",isAuth,logoutUser)
 
 
 
