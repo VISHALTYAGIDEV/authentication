@@ -22,5 +22,10 @@ router.get("/my",isAuth,myprofile)
 //access token ko refresh karne ka route 
 router.post("/refresh",RefreshToken)
 
+//user logout route 
+router.post("/logout",logoutUser)
+
+
+
 
 export default router

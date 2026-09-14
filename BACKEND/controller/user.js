@@ -8,7 +8,7 @@ import bcrypt from "bcrypt"
 import crypto from "crypto"
 import sendMail from "../config/sendMail.js";
 import { getVerifyEmailHtml,getOtpHtml } from "../config/html.js";
-import { generateAccessToken, generateToken, verifyRefreshToken } from "../config/generatetoken.js";
+import { generateAccessToken, generateToken, revokeRefreshToken, verifyRefreshToken } from "../config/generatetoken.js";
 
 
 
@@ -353,4 +353,29 @@ export const RefreshToken = trycatch(async(req,res)=>{
     res.status(200).json({
         message:"access token refreshed!"
     })
+})
+//============================================================================================================================
+
+
+
+
+
+
+//==========================================================================================================
+//user logout controller
+//========================================================================================================
+export const logoutUser = trycatch(async(req,res)=>{
+    const userId = req.User._id
+
+    revokeRefreshToken(userId)
+
+res.clearCookie("RefreshToken")
+res.clearCookie("AccessToken")
+
+redisClient.del(`user:${userId}`)
+
+res.status(200).json({
+    message:"user logged out successfully!"
+})
+
 })

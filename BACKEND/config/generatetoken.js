@@ -65,3 +65,10 @@ export const generateAccessToken = (id,res)=>{
 })
 //ab token refersh karne ke liye eek api banegi jo ki controller mai likhi hai so check there
 }
+
+
+
+//logout karne ke baad redis se bhi to user data delete karna padega
+export const revokeRefreshToken = async(userId)=>{
+    redisClient.del(`refresh-token${userId}`)
+}
