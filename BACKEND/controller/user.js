@@ -8,6 +8,7 @@ import bcrypt from "bcrypt"
 import crypto from "crypto"
 import sendMail from "../config/sendMail.js";
 import { getVerifyEmailHtml,getOtpHtml } from "../config/html.js";
+import { generateToken } from "../config/generatetoken.js";
 
 
 
@@ -214,7 +215,7 @@ if(await redisClient.get(rateLimitKey)){
 
 const  user = await User.findOne({email})
 if (!user){
-    res.status(400).json({
+    return res.status(400).json({
         message:"Invalid credentials!"
     })
 }
@@ -223,11 +224,13 @@ if (!user){
 // console.log("password",user.password)
 const comparePassword = await bcrypt.compare(password,user.password)
 if(!comparePassword){
-    res.status(400).json({
+   return res.status(400).json({
         message:"Invalid credentials!"
     })
 }
 
+
+// IS password is correct then ham user ko otp bhejenge for 2FA KE LIYE 
 const otp = Math.floor(100000 + Math.random()*900000).toString()
 const otpKey = `login-otp:${email}`
 // is rate limit ka matlab purana otp 5min tak valid rahega
@@ -258,7 +261,7 @@ res.json({
 
 
 //==================================================================================================================================
-//now otp ko verify karne ka controller yaha likhenge
+//now login ke time otp ko verify karne ka controller yaha likhenge
 //============================================================================================================================
 export const verifyOtp = trycatch(async(req,res)=>{
     const {email,otp} = req.body
@@ -287,13 +290,18 @@ export const verifyOtp = trycatch(async(req,res)=>{
 
 
     //otp verified hote hi aab ham log access tokens and refresh tokens generate karenge  after finding th euser in the user in the database
-    const user = User.findOne({email})
+    const user = await User.findOne({email})
     if(!user){
         return  res.status(400).json({
             message:"user not found! please register before loging in!"
         })
     }
 
+const tokenData = await generateToken(user._id.toString(),res)
 
+ res.status(200).json({
+    message:`welcome ${user.name}`,
+    user
+})
 
 })

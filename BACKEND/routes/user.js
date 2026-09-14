@@ -1,5 +1,5 @@
 import express from "express"
-import { registerUser, userlogin, verifyUser } from "../controller/user.js"
+import { registerUser, userlogin, verifyUser,verifyOtp } from "../controller/user.js"
 
 const router = express.Router()
 
@@ -11,6 +11,9 @@ router.post("/verify/:token",verifyUser)
 
 //login route 
 router.post("/login",userlogin)
+
+//verify during login route 
+router.post("/verify",verifyOtp)
 
 
 export default router
