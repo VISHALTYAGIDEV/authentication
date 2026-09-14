@@ -2,6 +2,7 @@ import express from "express"
 import dotenv from "dotenv"
 import connectdb  from "./config/db.js"
 import { createClient } from "redis"
+import cookieParser from "cookie-parser"
 dotenv.config()
 
 await connectdb()
@@ -20,7 +21,7 @@ export const redisClient = createClient({
 redisClient.on("error", (err) => console.error("redis error:", err))
 redisClient
 .connect()
-.then(()=>console.log("redis connected successsfully!"))
+.then(()=>console.log("redis connected successsfully!=================="))
 .catch(console.error)
 
 
@@ -30,6 +31,7 @@ const app = express()
 
 // middlewares
 app.use(express.json())
+app.use(cookieParser())
 
 // importing user routes eek hi baar import hote hai 
 import userRoutes from "./routes/user.js"
@@ -42,5 +44,5 @@ app.use("/api/v1", userRoutes)
 const port = process.env.PORT || 5000
 
 app.listen(port,()=>{
-    console.log(`server is running on port ${port}`)
+    console.log(`server is running on port ${port}🍌`)
 })
