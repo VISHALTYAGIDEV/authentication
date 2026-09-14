@@ -1,22 +1,25 @@
 import jwt from "jsonwebtoken"
 import { redisClient } from "../index.js"
 import { User } from "../models/User.js"
-import { Error } from "mongoose"
+// import { Error } from "mongoose"
 // import { json } from "zod"
 
 
 
+
+
 //Kaam hai req.user bharna, taaki controller ko pata ho ki request kis user ki hai.
-const isauth = async(req,res,next)=>{
+const isAuth = async(req,res,next)=>{
     try {
         const token = req.cookies.AccessToken
         if(!token){
             return res.status(403).json({
-                message:"please login no token"
+                message:"no token"
             })
         }
 const decodedData = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)/*Signature check — token ke saath chhedchhad to nahi hui
 Expiry check — 1 minute wala time khatam to nahi hua*/
+// console.log("DECODED:", decodedData)
 if(!decodedData){
     return resizeBy.status(400).json({
         message:"token expired!"
@@ -30,7 +33,7 @@ req.user = JSON.parse(cacheUser)
 return next()
 }
 
-const user = await User.findOne(decodedData.id).select("-password")
+const user = await User.findById(decodedData.id).select("-password")
 if(!user){
     return res.status(400).json({
         message:"no user found with these credentials"
@@ -48,3 +51,5 @@ return next()
           })
     }
 }
+
+export default isAuth;

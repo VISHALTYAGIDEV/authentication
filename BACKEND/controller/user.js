@@ -8,7 +8,7 @@ import bcrypt from "bcrypt"
 import crypto from "crypto"
 import sendMail from "../config/sendMail.js";
 import { getVerifyEmailHtml,getOtpHtml } from "../config/html.js";
-import { generateToken } from "../config/generatetoken.js";
+import { generateAccessToken, generateToken, verifyRefreshToken } from "../config/generatetoken.js";
 
 
 
@@ -303,5 +303,54 @@ const tokenData = await generateToken(user._id.toString(),res)
     message:`welcome ${user.name}`,
     user
 })
+})
+//========================================================================================================================
 
+
+
+
+
+
+
+//============================================================================================================================
+//first authenticated api matlab auth ke middleware se authorized hoke aai hai
+//==========================================================================================================
+export const myprofile = trycatch(async(req,res)=>{
+    //ye rq.user middleware se aara hai
+    const user = req.user
+    res.json(user)
+})
+//=========================================================================================================================
+
+
+
+
+
+
+
+
+//==========================================================================================================
+//access tokens ko generate karane ke liye api
+//==================================================================================================================
+export const RefreshToken = trycatch(async(req,res)=>{
+    const RefreshToken = req.cookies.RefreshToken
+    if(!RefreshToken){
+        return res.ststus(401).json({
+            message:"invalid refresh token!"
+        })
+    }
+
+    const decode = await verifyRefreshToken(RefreshToken)
+    // console.log("DECODE:", decode) 
+
+    if(!decode){
+        return res.status(401).json({
+            message:"invalid refresh token!"
+        })
+    }
+
+    generateAccessToken(decode.id,res)
+    res.status(200).json({
+        message:"access token refreshed!"
+    })
 })
