@@ -1,11 +1,11 @@
 // import React from 'react'
 
-const VerifyOtp = () => {
+const verifyOtp = () => {
   return (
     <div>
-      verify-otp
+      
     </div>
   )
 }
 
-export default VerifyOtp
+export default verifyOtp

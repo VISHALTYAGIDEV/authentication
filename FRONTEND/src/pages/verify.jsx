@@ -3,7 +3,7 @@
 const verify = () => {
   return (
     <div>
-      verify
+      
     </div>
   )
 }
