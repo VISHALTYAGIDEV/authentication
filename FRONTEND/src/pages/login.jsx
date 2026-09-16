@@ -1,16 +1,25 @@
 // import React from 'react'
-
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import {toast} from "react-toastify"
+import server from "../main.jsx"
+import axios from "axios"
 
-const login = () => {
+
+const Login = () => {
 const [email ,setEmail] =  useState("")
 const [password ,setPassword] =  useState("")
-
+const [btnloading, setbtnloading] = useState(false)
 
   const submitHandler = async (e) => {
+    setbtnloading(true)
     e.preventDefault()
-    console.log(email,password)
+    try {
+         const {data} = await axios.post(`${server}/api/v1/login`,{email,password})
+         toast.success(data.message)
+    } catch (error) {
+      toast.error(error.response.data.message)
+    }finally{setbtnloading(false)}
   };
 
 
@@ -22,7 +31,7 @@ const [password ,setPassword] =  useState("")
       <p className="leading-relaxed mt-4">Poke slow-carb mixtape knausgaard, typewriter street art gentrify hammock starladder roathse. Craies vegan tousled etsy austin.</p>
     </div>
     <form  onSubmit={submitHandler} className="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0">
-      <h2 className="text-gray-900 text-lg font-medium title-font mb-5">Sign Up</h2>
+      <h2 className="text-gray-900 text-lg font-medium title-font mb-5">Log In</h2>
      
 
 
@@ -49,7 +58,7 @@ const [password ,setPassword] =  useState("")
       </div>
 
 
-      <button className="text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">Button</button>
+      <button className="text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg " disabled={btnloading}>{btnloading ? "submitting...":"button"}</button>
       <Link to={"/register"} className="text-xs text-gray-500 mt-3">Dont have an account?</Link>
     </form>
   </div>
@@ -57,4 +66,4 @@ const [password ,setPassword] =  useState("")
   )
 }
 
-export default login
+export default Login

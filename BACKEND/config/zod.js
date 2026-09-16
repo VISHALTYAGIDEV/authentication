@@ -4,7 +4,7 @@ import {z} from "zod"
 export const registerSchema = z.object({
     name:z.string().min(2,"nam atleast should be 2 characters!"),
     email:z.string().email("invalid email format!"),
-    password:z.string().min(8,"atleast 8 characters long!")
+    password:z.string().min(8,"password must be atleast 8 characters long!")
 })
 
 
@@ -12,5 +12,5 @@ export const registerSchema = z.object({
 //login user ka schema 
 export const loginSchema = z.object({
     email:z.string().email("invalid email format!"),
-    password:z.string().min(8,"atleast 8 characters long!")
+    password:z.string().min(8,"password must be atleast 8 characters long!")
 })

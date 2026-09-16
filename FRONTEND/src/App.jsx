@@ -2,6 +2,7 @@
 import {BrowserRouter,Route,Routes} from 'react-router-dom'
 import Home from "./pages/home.jsx"
 import Login from "./pages/login.jsx"
+import {ToastContainer} from "react-toastify"
 
 const App = ()=>{
   return  <>
@@ -12,9 +13,8 @@ const App = ()=>{
   <Route path="/" element={<Home/>}/>
   <Route path="/" element={<Home/>}/>
   <Route path="/" element={<Home/>}/>
-
-  
 </Routes>
+<ToastContainer/>
 </BrowserRouter>
   </>
 }

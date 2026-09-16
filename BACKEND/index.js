@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import connectdb  from "./config/db.js"
 import { createClient } from "redis"
 import cookieParser from "cookie-parser"
+import cors from "cors"
 dotenv.config()
 
 await connectdb()
@@ -32,6 +33,11 @@ const app = express()
 // middlewares
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors({
+    origin:process.env.FRONTEND_URL,
+    credentials:true,
+    methods:["GET","PUT","POST","DELETE","OPTIONS"]
+}))
 
 // importing user routes eek hi baar import hote hai 
 import userRoutes from "./routes/user.js"
