@@ -353,7 +353,7 @@ export const RefreshToken = trycatch(async(req,res)=>{
     res.status(200).json({
         message:"access token refreshed!"
     })
-})
+});
 //============================================================================================================================
 
 
