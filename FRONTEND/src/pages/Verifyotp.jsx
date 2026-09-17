@@ -3,7 +3,7 @@
 const Verifyotp = () => {
   return (
     <div>
-      
+      otp verification
     </div>
   )
 }

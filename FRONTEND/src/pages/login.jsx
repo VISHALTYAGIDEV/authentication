@@ -17,13 +17,13 @@ const nevigate = useNavigate()
 
 
   const submitHandler = async (e) => {
+       e.preventDefault()
     setbtnloading(true)
-    e.preventDefault()
     try {
          const {data} = await axios.post(`${server}/api/v1/login`,{email,password})
          toast.success(data.message)
          localStorage.setItem("email",email)
-         nevigate("/Verifyotp")
+         nevigate("/verifyotp")
     } catch (error) {
       toast.error(error.response.data.message)
     }finally{setbtnloading(false)}
