@@ -1,9 +1,10 @@
 // import React from 'react'
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link,useNavigate} from "react-router-dom"
 import {toast} from "react-toastify"
 import server from "../main.jsx"
 import axios from "axios"
+// import Verifyotp from "./Verifyotp.jsx"
 
 
 const Login = () => {
@@ -11,12 +12,18 @@ const [email ,setEmail] =  useState("")
 const [password ,setPassword] =  useState("")
 const [btnloading, setbtnloading] = useState(false)
 
+
+const nevigate = useNavigate()
+
+
   const submitHandler = async (e) => {
     setbtnloading(true)
     e.preventDefault()
     try {
          const {data} = await axios.post(`${server}/api/v1/login`,{email,password})
          toast.success(data.message)
+         localStorage.setItem("email",email)
+         nevigate("/Verifyotp")
     } catch (error) {
       toast.error(error.response.data.message)
     }finally{setbtnloading(false)}
