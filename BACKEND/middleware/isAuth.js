@@ -12,6 +12,7 @@ import { User } from "../models/User.js"
 const isAuth = async(req,res,next)=>{
     try {
         const token = req.cookies.AccessToken
+        // console.log(token)
         if(!token){
             return res.status(403).json({
                 message:"no token"

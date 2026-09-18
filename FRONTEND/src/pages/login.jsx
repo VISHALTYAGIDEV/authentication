@@ -23,7 +23,8 @@ const nevigate = useNavigate()
          const {data} = await axios.post(`${server}/api/v1/login`,{email,password})
          toast.success(data.message)
          localStorage.setItem("email",email)
-         nevigate("/verifyotp")
+         nevigate("/verify")
+        //  ab ham log verifyotp vale page par chale jaayege and abb usko design karenge
     } catch (error) {
       toast.error(error.response.data.message)
     }finally{setbtnloading(false)}

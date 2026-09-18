@@ -17,16 +17,17 @@ await redisClient.set(RefreshTokenKey,RefreshToken,{EX:7*24*60*60})
 // now dono tokens ko cookie mai store karenge 
 res.cookie("AccessToken",AccessToken,{
     httpOnly:true,  // // ← XSS: script cookie padh nahi sakti
-    // secure:true,   // ← sirf HTTPS pe jaayegi
-    sameSite:"strict",  // ← CSRF: doosri site se cookie nahi jaati
+ secure:false,   // ← sirf HTTPS pe jaayegi
+    sameSite:"lax",  // ← CSRF: doosri site se cookie nahi jaati
     maxAge:1*60*1000
 })
 
 res.cookie("RefreshToken",RefreshToken,{
     maxAge:7*24*60*60*1000,
     httpOnly:true,
-    sameSite:"none",
-    // secure:true
+    // sameSite:"none",
+    secure:false,
+    sameSite:"lax"
 })
 return {AccessToken,RefreshToken}
 }
@@ -59,8 +60,8 @@ export const generateAccessToken = (id,res)=>{
     })
     res.cookie("AccessToken",AccessToken,{
     httpOnly:true,  // // ← XSS: script cookie padh nahi sakti
-    // secure:true,   // ← sirf HTTPS pe jaayegi
-    sameSite:"strict",  // ← CSRF: doosri site se cookie nahi jaati
+    secure:false,   // ← sirf HTTPS pe jaayegi   true
+    sameSite:"lax",  // ← CSRF: doosri site se cookie nahi jaati  strict
     maxAge:1*60*1000
 })
 //ab token refersh karne ke liye eek api banegi jo ki controller mai likhi hai so check there

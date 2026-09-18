@@ -10,7 +10,7 @@ const App = ()=>{
 <Routes>
   <Route path="/" element={<Home/>}/>
   <Route path="/login" element={<Login/>}/>
-  <Route path="/verifyotp" element={<Verifyotp/>}/>
+  <Route path="/verify" element={<Verifyotp/>}/>
 </Routes>
 <ToastContainer/>
 </BrowserRouter>
