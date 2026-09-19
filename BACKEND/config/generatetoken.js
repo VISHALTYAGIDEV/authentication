@@ -62,7 +62,7 @@ export const generateAccessToken = (id,res)=>{
     httpOnly:true,  // // ← XSS: script cookie padh nahi sakti
     secure:false,   // ← sirf HTTPS pe jaayegi   true
     sameSite:"lax",  // ← CSRF: doosri site se cookie nahi jaati  strict
-    maxAge:1*60*1000
+    maxAge:15*60*1000
 })
 //ab token refersh karne ke liye eek api banegi jo ki controller mai likhi hai so check there
 }
