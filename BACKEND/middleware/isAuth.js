@@ -17,7 +17,7 @@ const isAuth = async(req,res,next)=>{
             return res.status(403).json({
                 message:"no token"
             })
-        }
+        };
 const decodedData = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)/*Signature check — token ke saath chhedchhad to nahi hui
 Expiry check — 1 minute wala time khatam to nahi hua*/
 // console.log("DECODED:", decodedData)
